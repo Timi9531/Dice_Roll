@@ -1,65 +1,89 @@
-import Image from "next/image";
+'use client'
+import React from 'react'
+import styles from './styles.module.css'
+import { useState } from 'react'
+import Image from 'next/image'
+import dice_1 from './resources/inverted-dice-1.svg'
+import dice_2 from './resources/inverted-dice-2.svg'
+import dice_3 from './resources/inverted-dice-3.svg'
+import dice_4 from './resources/inverted-dice-4.svg'
+import dice_5 from './resources/inverted-dice-5.svg'
+import dice_6 from './resources/inverted-dice-6.svg'
 
-export default function Home() {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
-  );
+type DiceMap = {
+  [key: number]: string
 }
+
+const dices: DiceMap = {
+  1: dice_1,
+  2: dice_2,
+  3: dice_3,
+  4: dice_4,
+  5: dice_5,
+  6: dice_6,
+}
+const page = () => {
+  const [dice_count, set_dice] = useState(1); 
+  const [dice_elements, set_dice_elements] = useState<React.ReactNode[]>([]);
+  const [sum, set_sum] = useState(0);
+
+  React.useEffect(() => {
+    generate_dice(dice_count);
+  }, [dice_count]);
+
+  function generate_dice(dice_number:number) {
+    let dice_elements = [];
+    let sum = 0;
+    for(let i = 1; i < dice_number+1; i++) {
+      let value = randomIntFromInterval(1, 6);
+      sum += value;
+      let element = React.createElement(Image, {
+        key: i,
+        src: dices[value],
+        alt: 'dice',
+        width: 100,
+        height: 100
+      } )
+      dice_elements.push(element);
+      
+    }
+    set_dice_elements(dice_elements);
+    set_sum(sum);
+  }
+  function randomIntFromInterval(min: number, max: number) { // min and max included 
+    return Math.floor(Math.random() * (max - min + 1) + min);
+  }
+
+
+  const handle_decrease = () => {
+    if (dice_count > 1) {
+      set_dice(dice_count - 1);
+    }
+  }
+
+  const handle_increase = () => {
+    if (dice_count < 10) {
+      set_dice(dice_count + 1);
+    }
+  }
+
+  return (
+    <>
+      <div className={styles.main}>
+        <h1>Roll the dice</h1>
+        <div className={styles.dice_container}>
+          {dice_elements}
+        </div>
+        <div>
+          <button className={styles.btn} onClick={handle_decrease}>&lt;</button>
+          <button className={styles.btn} onClick={() => generate_dice(dice_count)}>Roll</button> 
+          <button className={styles.btn} onClick={handle_increase}>&gt;</button>
+          <p className={styles.dice_count}>{dice_count}</p>
+          <div className={styles.sum}>Sum: {sum}</div>
+        </div>
+      </div>
+    </>
+    )
+}
+
+export default page
